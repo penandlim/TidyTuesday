@@ -161,5 +161,7 @@ plot(g, bg = "#333333")
 ```
 
 ```{r saveplot}
-ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.png", type = "cairo", bg = "#333333", dpi = 96) # adjust dpi accordingly
+ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.png", type = "cairo", bg = "#1a1a1a", dpi = 96) # adjust dpi accordingly
+ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.pdf", device =cairo_pdf, bg = "#1a1a1a", dpi = 96) # adjust dpi accordingly
+
 ```
