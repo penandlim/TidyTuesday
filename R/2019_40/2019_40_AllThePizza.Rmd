@@ -13,14 +13,20 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 
+#install.packages("tidyverse")
+devtools::install_github("dkahle/ggmap")
+devtools::install_github("dr-harper/ggmapstyles")
+devtools::install_github("clauswilke/ggtext")
 ```
 
 ```{r prep, message=FALSE}
 library(tidyverse)
-library(lubridate)
-library(RColorBrewer)
-library(patchwork)
-source('R/setup.R')
+
+
+
+library(ggmap)
+library(ggmapstyles)
+source('R/googleAPI.R')
 ```
 
 ```{r data}
