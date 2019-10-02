@@ -1,0 +1,51 @@
+---
+title: "2019_40_AllThePizza"
+author: "Jongseung John Lim"
+date: "10/1/2019"
+output: 
+  html_document:
+    theme: paper
+    highlight: kate
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+
+```
+
+```{r prep, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(RColorBrewer)
+library(patchwork)
+source('R/setup.R')
+```
+
+```{r data}
+pizza_jared <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-01/pizza_jared.csv")
+pizza_barstool <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-01/pizza_barstool.csv")
+pizza_datafiniti <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-01/pizza_datafiniti.csv")
+
+```
+
+```{r define map}
+mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymaps.com/style/8097/wy", zoom = 13)
+
+```
+
+```{r pressure, echo=FALSE}
+
+myplot <- ggmap(mymap) + 
+  geom_point(aes(x = longitude, y = latitude, color = review_stats_all_average_score, alpha = review_stats_all_average_score), data = pizza_barstool, size = 2) + 
+  scale_colour_gradient2(low="red", mid = "yellow", high="blue", midpoint = 4, space = "rgb", aesthetics = "colour", na.value = "grey50", guide = "colourbar") + 
+  scale_alpha(range = c(0.2, 0.7))
+
+plot(myplot)
+
+```
+
+```{r saveplot}
+ggsave(myplot, file = "plots/2019_40/2019_40_AllThePizza.png", dpi = 700) # adjust dpi accordingly
+```
