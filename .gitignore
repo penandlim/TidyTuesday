@@ -36,5 +36,5 @@ vignettes/*.pdf
 rsconnect/
 
 bfg.jar
-R/googleAPI.R
+R/utils/secrets.R
 sensitive.txt

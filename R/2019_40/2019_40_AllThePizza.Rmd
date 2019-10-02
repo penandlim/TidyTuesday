@@ -16,17 +16,20 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 #install.packages("tidyverse")
 devtools::install_github("dkahle/ggmap")
 devtools::install_github("dr-harper/ggmapstyles")
-devtools::install_github("clauswilke/ggtext")
+#devtools::install_github("clauswilke/ggtext")
 ```
 
 ```{r prep, message=FALSE}
 library(tidyverse)
-
-
-
+library(ggtext)
 library(ggmap)
 library(ggmapstyles)
-source('R/googleAPI.R')
+library(gridExtra)
+source("R/utils/custom_themes.R")
+source('R/utils/secrets.R')
+register_google(key = googleMapsAPIKey)
+
+theme_set(theme_custom(base_family="dosis"))
 ```
 
 ```{r data}
@@ -37,21 +40,86 @@ pizza_datafiniti <- readr::read_csv("https://raw.githubusercontent.com/rfordatas
 ```
 
 ```{r define map}
-mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymaps.com/style/8097/wy", zoom = 13)
+
+mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymaps.com/style/8097/wy", zoom = 12)
 
 ```
 
 ```{r pressure, echo=FALSE}
 
-myplot <- ggmap(mymap) + 
-  geom_point(aes(x = longitude, y = latitude, color = review_stats_all_average_score, alpha = review_stats_all_average_score), data = pizza_barstool, size = 2) + 
-  scale_colour_gradient2(low="red", mid = "yellow", high="blue", midpoint = 4, space = "rgb", aesthetics = "colour", na.value = "grey50", guide = "colourbar") + 
-  scale_alpha(range = c(0.2, 0.7))
+theme_update(rect = element_rect(fill = "grey10"),
+          plot.title = element_text(size = 35,
+                                    lineheight = 1.2),
+          plot.subtitle = element_markdown(size = 22, 
+                                           color = "grey50", 
+                                           hjust = 0,
+                                           lineheight = 1.4),
+          plot.caption = element_markdown(family = "dosis", 
+                                          size = 18,
+                                          color = "grey50"),
+          axis.text.x = element_text(size = 14, 
+                                     family = "Roboto Mono",
+                                     color = "grey40"),
+          axis.text.y = element_text(size = 14, 
+                                     family = "Roboto Mono",
+                                     color = "grey40"),
+          axis.ticks.x = element_line(color = "grey30"),
+          axis.ticks.y = element_blank(),
+          strip.background = element_blank())
 
-plot(myplot)
+pizza_barstool_newyork <- subset(pizza_barstool[order(pizza_barstool$review_stats_all_average_score, decreasing = TRUE),], substring(zip, 1, 1) == 1)
+
+pizza_barstool_newyork_trustworthy <- subset(pizza_barstool_newyork, review_stats_all_count >= 20)
+
+daveplot <- ggplot(data=head(pizza_barstool_newyork_trustworthy, 10), aes(x=reorder(paste(name, sep = ""), review_stats_all_average_score), y=review_stats_all_average_score, fill=city)) +
+  geom_bar(stat="identity") + 
+  geom_text(aes(label=sprintf("%.3f", round(review_stats_all_average_score,3))), position=position_dodge(width=0.9), vjust=0.4, hjust=1.2) + 
+  geom_text(aes(label=paste(review_stats_all_count, "votes"), color="white"), hjust=-0.1) + guides(colour=FALSE) +
+  coord_flip(ylim = c(8, 10))+
+  labs(x=NULL, y="Average rating", 
+         subtitle = "<br><br><br>According to Dave & Barstool Sports fans...<br>") + 
+  theme(axis.text.y = element_text(size = 10, 
+         color = "white"))
+
+onebiteplot <- ggplot() + labs(x = NULL, y = NULL,
+         title = " ",                       
+         subtitle = "<br>How biased is Dave?")
+
+jaredplot <- ggplot() + labs(x = NULL, y = NULL,
+         title = " ", 
+         subtitle = "<br>According to nyhackr.org meetup members...")
+
+
+
+mapplot <- ggmap(mymap) + 
+  geom_point(aes(x = longitude, y = latitude, color = review_stats_all_average_score, alpha = review_stats_all_average_score), data = pizza_barstool_newyork, size = 2) + 
+  scale_colour_gradient2(low="red", mid = "orange", high="blue", midpoint = 3, space = "rgb", aesthetics = "colour", na.value = "grey50", guide = "colourbar", limits = c(0,10), breaks=c(2, 4, 6, 8, 10), labels=format(c( 2, 4, 6, 8, 10))) + 
+  scale_alpha(range = c(0.2, 0.7)) + guides(alpha=FALSE) +
+  theme(rect = element_rect(fill = "grey10"),
+          plot.title = element_markdown(size = 35,
+                                    lineheight = 1.2),
+          plot.subtitle = element_markdown(size = 22, 
+                                           color = "grey50", 
+                                           hjust = 0,
+                                           lineheight = 1.4),
+          plot.caption = element_markdown(family = "dosis", 
+                                          size = 18,
+                                          color = "grey50"),
+          axis.text.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank()) +
+  labs(x = NULL, y = NULL, color="Average rating (out of 10)",
+         title = "<img src='img/pizza-slice-solid.png' width='50'/> Top 10 Pizza places in New York", 
+         subtitle = "<br><span>\"Alright Frankie, it's pizza reviewing time. <b>One bite</b> - everyone knows the rules.\"</span><br>", caption = "\n\nVisualization by John Lim  |  Data: Jared Lander and Barstool Sports")
+
+
+g <- arrangeGrob(daveplot, onebiteplot,mapplot, layout_matrix = rbind(c(3, 1),c(3,2)))
+
+plot(g, bg = "#333333")
 
 ```
 
 ```{r saveplot}
-ggsave(myplot, file = "plots/2019_40/2019_40_AllThePizza.png", dpi = 700) # adjust dpi accordingly
+ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.png", type = "cairo", bg = "#333333", dpi = 96) # adjust dpi accordingly
 ```
