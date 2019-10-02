@@ -50,8 +50,9 @@ mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymap
 ```{r pressure, echo=FALSE}
 
 theme_update(rect = element_rect(fill = "grey10"),
-          plot.title = element_text(size = 35,
-                                    lineheight = 1.2),
+          plot.title = element_markdown(size = 35,
+                                    lineheight = 1.2,
+                                    hjust = 0.5),
           plot.subtitle = element_markdown(size = 22, 
                                            color = "grey50", 
                                            hjust = 0,
@@ -79,8 +80,8 @@ daveplot <- ggplot(data=head(pizza_barstool_newyork_trustworthy, 10), aes(x=reor
   geom_text(aes(label=sprintf("%.3f", round(review_stats_all_average_score,3))), position=position_dodge(width=0.9), vjust=0.4, hjust=1.2) + 
   geom_text(aes(label=paste(review_stats_all_count, "votes"), color="white"), hjust=-0.1) + guides(colour=FALSE) +
   coord_flip(ylim = c(8, 10))+
-  labs(x=NULL, y="Average rating", 
-         subtitle = "<br><br><br>According to Dave Portnoy & One Bite app users") + 
+  labs(x=NULL, y="Average rating", title = "<img src='img/pizza-slice-solid.png' width='50'/> Top 10 Pizza places in New York",
+         subtitle = "<br>According to Dave Portnoy & One Bite app users") + 
   theme(axis.text.y = element_text(size = 10, 
          color = "white"))
 
@@ -128,7 +129,7 @@ for( i in rownames(pizza_jared_intersect_fixed) ) {
 melted <- melt(pizza_barstool_intersect, id.vars = "name", measure.vars = c("review_stats_all_average_score", "jared_score"))
 
 biasedplot <- ggplot(data=melted, aes(x=reorder(name, value), y=value, fill=variable)) + geom_bar (stat="identity", position = position_dodge(width = 0.5)) + labs(x = NULL, y = "Average Rating",                     
-         subtitle = "<br>Is One Bite biased?", caption="\n\nVisualization by John Lim  |  Data: Jared Lander and Barstool Sports") + theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 10, color="white")) + coord_cartesian(ylim = c(2, 10)) + scale_fill_discrete("Sources", labels=c("One Bite users", "Jared Lander's Pizza polls"))
+         subtitle = "<br>Is One Bite biased?") + theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 10, color="white")) + coord_cartesian(ylim = c(2, 10)) + scale_fill_discrete("Sources", labels=c("One Bite users", "Jared Lander's Pizza polls"))
 
 
 mapplot <- ggmap(mymap) + 
@@ -144,24 +145,33 @@ mapplot <- ggmap(mymap) +
                                            lineheight = 1.4),
           plot.caption = element_markdown(family = "dosis", 
                                           size = 18,
+                                          face="bold",
+                                          hjust = 3,
                                           color = "grey50"),
           axis.text.x = element_blank(),
           axis.text.y = element_blank(),
           axis.ticks.x = element_blank(),
           axis.ticks.y = element_blank()) +
   labs(x = NULL, y = NULL, color="Average rating (out of 10)",
-         title = "<img src='img/pizza-slice-solid.png' width='50'/> Top 10 Pizza places in New York", 
-         subtitle = "<br><span>\"Alright Frankie, it's pizza reviewing time. <b>One bite</b> - everyone knows the rules.\"</span><br>")
+          
+         subtitle = "<br><span>\"Alright Frankie, it's pizza reviewing time. <b>One bite</b> - everyone knows the rules.\"</span><br>",  caption="\n\nVisualization by John Lim  |  Data: Jared Lander and Barstool Sports")
 
 
-g <- arrangeGrob(daveplot, biasedplot, mapplot, layout_matrix = rbind(c(3, 1),c(3,2)))
+g <- arrangeGrob(daveplot, biasedplot, mapplot, layout_matrix = rbind(c(1, 3),c(2,3)))
 
 plot(g, bg = "#333333")
+
+g1 <- arrangeGrob(daveplot, biasedplot, layout_matrix = rbind(c(1),c(2)))
+g2 <- mapplot
 
 ```
 
 ```{r saveplot}
 ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.png", type = "cairo", bg = "#1a1a1a", dpi = 96) # adjust dpi accordingly
 ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.pdf", device =cairo_pdf, bg = "#1a1a1a", dpi = 96) # adjust dpi accordingly
+ggsave(g1, file = "plots/2019_40/2019_40_AllThePizza_Charts.png", width = 10, height=10.5, type = "cairo", bg = "#1a1a1a", dpi = 96)
+ggsave(g1, file = "plots/2019_40/2019_40_AllThePizza_Charts.pdf", width = 10, height=10.5, device=cairo_pdf, bg = "#1a1a1a", dpi = 96)
+ggsave(g2, file = "plots/2019_40/2019_40_AllThePizza_Map.png", width = 10, height=9, type = "cairo", bg = "#1a1a1a", dpi = 96)
+ggsave(g2, file = "plots/2019_40/2019_40_AllThePizza_Map.pdf", width = 10, height=9,device=cairo_pdf, bg = "#1a1a1a", dpi = 96)
 
 ```
