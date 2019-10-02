@@ -25,8 +25,10 @@ library(ggtext)
 library(ggmap)
 library(ggmapstyles)
 library(gridExtra)
+library(reshape2)
 source("R/utils/custom_themes.R")
 source('R/utils/secrets.R')
+source('R/utils/utils.R')
 register_google(key = googleMapsAPIKey)
 
 theme_set(theme_custom(base_family="dosis"))
@@ -55,6 +57,7 @@ theme_update(rect = element_rect(fill = "grey10"),
                                            hjust = 0,
                                            lineheight = 1.4),
           plot.caption = element_markdown(family = "dosis", 
+                                          face = "bold",
                                           size = 18,
                                           color = "grey50"),
           axis.text.x = element_text(size = 14, 
@@ -77,23 +80,60 @@ daveplot <- ggplot(data=head(pizza_barstool_newyork_trustworthy, 10), aes(x=reor
   geom_text(aes(label=paste(review_stats_all_count, "votes"), color="white"), hjust=-0.1) + guides(colour=FALSE) +
   coord_flip(ylim = c(8, 10))+
   labs(x=NULL, y="Average rating", 
-         subtitle = "<br><br><br>According to Dave & Barstool Sports fans...<br>") + 
+         subtitle = "<br><br><br>According to Dave Portnoy & One Bite app users") + 
   theme(axis.text.y = element_text(size = 10, 
          color = "white"))
 
-onebiteplot <- ggplot() + labs(x = NULL, y = NULL,
-         title = " ",                       
-         subtitle = "<br>How biased is Dave?")
+common <- intersect(pizza_barstool_newyork$name, pizza_jared$place)
+pizza_barstool_intersect <- subset(pizza_barstool_newyork, name %in% common)
+pizza_jared_intersect <- subset(pizza_jared, place %in% common)
+pizza_jared_intersect <- pizza_jared_intersect[order(pizza_jared_intersect$total_votes, decreasing = TRUE),]
+pizza_barstool_intersect <- pizza_barstool_intersect[order(pizza_barstool_intersect$review_stats_all_count, decreasing = TRUE),]
+pizza_barstool_intersect <- pizza_barstool_intersect[!duplicated(pizza_barstool_intersect$name),]
+pizza_barstool_intersect$jared_score = 0
 
-jaredplot <- ggplot() + labs(x = NULL, y = NULL,
-         title = " ", 
-         subtitle = "<br>According to nyhackr.org meetup members...")
+pizza_jared_intersect_fixed <- pizza_jared_intersect[0,]
 
+for( i in rownames(pizza_jared_intersect) ) {
+  placename <- pizza_jared_intersect[[i, "place"]]
+  recordedTime <- pizza_jared_intersect[[i, "time"]]
+  #pizza_jared_intersect <- subset(pizza_jared_intersect, (place == placename & time == recordedTime) | (place != placename) )
+  
+  if (nrow(pizza_jared_intersect_fixed[pizza_jared_intersect_fixed$place == placename, ]) == 0) {
+    pizza_jared_intersect_fixed <- rbind(pizza_jared_intersect_fixed, pizza_jared_intersect[i,])
+  } else if (nrow(pizza_jared_intersect_fixed[pizza_jared_intersect_fixed$place == placename & pizza_jared_intersect_fixed$time == recordedTime, ]) > 0 ) {
+    pizza_jared_intersect_fixed <- rbind(pizza_jared_intersect_fixed, pizza_jared_intersect[i,])
+  }
+}
+
+for( i in rownames(pizza_jared_intersect_fixed) ) {
+  
+  placename <- pizza_jared_intersect_fixed[[i, "place"]]
+  temp <- pizza_jared_intersect_fixed[[i,"answer"]]
+  if (temp == "Excellent") {
+    score = 10
+  } else if (temp == "Good") {
+    score = 7.5
+  } else if (temp == "Average") {
+    score = 5
+  } else if (temp == "Poor") {
+    score = 2.5
+  } else {
+    score = 0
+  }
+  scoreToAdd <- score * pizza_jared_intersect_fixed[[i,"percent"]]
+  pizza_barstool_intersect[pizza_barstool_intersect$name == placename,]$jared_score %+=% scoreToAdd
+}
+   
+melted <- melt(pizza_barstool_intersect, id.vars = "name", measure.vars = c("review_stats_all_average_score", "jared_score"))
+
+biasedplot <- ggplot(data=melted, aes(x=reorder(name, value), y=value, fill=variable)) + geom_bar (stat="identity", position = position_dodge(width = 0.5)) + labs(x = NULL, y = "Average Rating",                     
+         subtitle = "<br>Is One Bite biased?", caption="\n\nVisualization by John Lim  |  Data: Jared Lander and Barstool Sports") + theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 10, color="white")) + coord_cartesian(ylim = c(2, 10)) + scale_fill_discrete("Sources", labels=c("One Bite users", "Jared Lander's Pizza polls"))
 
 
 mapplot <- ggmap(mymap) + 
   geom_point(aes(x = longitude, y = latitude, color = review_stats_all_average_score, alpha = review_stats_all_average_score), data = pizza_barstool_newyork, size = 2) + 
-  scale_colour_gradient2(low="red", mid = "orange", high="blue", midpoint = 3, space = "rgb", aesthetics = "colour", na.value = "grey50", guide = "colourbar", limits = c(0,10), breaks=c(2, 4, 6, 8, 10), labels=format(c( 2, 4, 6, 8, 10))) + 
+  scale_colour_gradient2(low="red", mid = "orange", high="blue", midpoint = 5, space = "rgb", aesthetics = "colour", na.value = "grey50", guide = "colourbar", limits = c(0,10), breaks=c(2, 4, 6, 8, 10), labels=format(c( 2, 4, 6, 8, 10))) + 
   scale_alpha(range = c(0.2, 0.7)) + guides(alpha=FALSE) +
   theme(rect = element_rect(fill = "grey10"),
           plot.title = element_markdown(size = 35,
@@ -111,10 +151,10 @@ mapplot <- ggmap(mymap) +
           axis.ticks.y = element_blank()) +
   labs(x = NULL, y = NULL, color="Average rating (out of 10)",
          title = "<img src='img/pizza-slice-solid.png' width='50'/> Top 10 Pizza places in New York", 
-         subtitle = "<br><span>\"Alright Frankie, it's pizza reviewing time. <b>One bite</b> - everyone knows the rules.\"</span><br>", caption = "\n\nVisualization by John Lim  |  Data: Jared Lander and Barstool Sports")
+         subtitle = "<br><span>\"Alright Frankie, it's pizza reviewing time. <b>One bite</b> - everyone knows the rules.\"</span><br>")
 
 
-g <- arrangeGrob(daveplot, onebiteplot,mapplot, layout_matrix = rbind(c(3, 1),c(3,2)))
+g <- arrangeGrob(daveplot, biasedplot, mapplot, layout_matrix = rbind(c(3, 1),c(3,2)))
 
 plot(g, bg = "#333333")
 
