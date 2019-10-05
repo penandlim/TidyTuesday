@@ -32,18 +32,6 @@ source(here::here('R/utils/utils.R'))
 source(here::here("R/utils/custom_themes.R"))
 register_google(key = googleMapsAPIKey)
 theme_set(theme_custom(base_family="dosis"))
-```
-
-```{r data}
-school_diversity <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-09-24/school_diversity.csv")
-
-```
-
-```{r define map}
-mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymaps.com/style/8097/wy", zoom = 12)
-```
-
-```{r pressure, echo=FALSE}
 
 theme_update(rect = element_rect(fill = "grey10"),
           plot.title = element_markdown(size = 35,
@@ -66,8 +54,23 @@ theme_update(rect = element_rect(fill = "grey10"),
           axis.ticks.x = element_line(color = "grey30"),
           axis.ticks.y = element_blank(),
           strip.background = element_blank())
+```
 
+```{r data}
+school_diversity <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-09-24/school_diversity.csv")
+```
 
+```{r define map}
+mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymaps.com/style/8097/wy", zoom = 12)
+```
+
+```{r pressure, echo=FALSE}
+statePlot <- ggplot(data=subset(school_diversity, SCHOOL_YEAR=="2016-2017"), aes(x=ST, y=1)) + geom_bar(stat="identity", width=.5, aes(fill=diverse)) + 
+  labs(title="School Diversity by State", 
+       subtitle="Make Vs Avg. Mileage", 
+       caption="source: NCES")
+
+plot(statePlot)
 
 ```
 
