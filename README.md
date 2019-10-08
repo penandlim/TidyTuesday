@@ -1,5 +1,11 @@
 # TidyTuesday
 
+## [[2019-10-08] 🏋️ Body Weight vs Lifting Performance](./R/2019_41/)
+[![Body Weight vs Lifting Performance](./plots/2019_41/2019_41_Powerlifting.png)](https://github.com/penandlim/TidyTuesday/tree/master/plots/2019_41/)
+[![Top Pizza places in NY Map](./plots/2019_41/2019_41_Powerlifting.gif)](https://github.com/penandlim/TidyTuesday/tree/master/plots/2019_41/)
+
+
+***
 ## [[2019-10-01] 🍕 Top 10 Pizza places in NY](./R/2019_40/)
 [![Top 10 Pizza places in NY Chart](./plots/2019_40/2019_40_AllThePizza_Charts.png)](https://github.com/penandlim/TidyTuesday/tree/master/plots/2019_40/)
 [![Top Pizza places in NY Map](./plots/2019_40/2019_40_AllThePizza_Map.png)](https://github.com/penandlim/TidyTuesday/tree/master/plots/2019_40/)
