@@ -152,13 +152,13 @@ spf <- ggplot(meltedfemale, aes(x=bodyweight_kg, y=value, color=variable,  fill=
   scale_colour_ghibli_d("PonyoMedium", direction = -1, "Lifting cateogry" , labels= c("Sqauat", "Bench", "Deadlift")) +
   scale_fill_ghibli_d(name = "PonyoDark", direction = -1, "Lifting cateogry" , labels= c("Sqauat", "Bench", "Deadlift"))
 
-g <- arrangeGrob(spm, spf, layout_matrix = rbind(c(1), c(1), c(1), c(1) , c(1),c(2) ,c(2) ,c(2) ,c(2)))
+g <- arrangeGrob(spm, spf, layout_matrix = rbind(c(1), c(1), c(1), c(1), c(1), c(1),c(2) ,c(2) ,c(2),c(2),c(2)))
 
 plot(g)
 ```
 
 ```{r saveplot}
-ggsave(g, file = "plots/2019_41/2019_41_Powerlifting.png", width= 10.5, type = "cairo", dpi = 96) # adjust dpi accordingly
-ggsave(g, file = "plots/2019_41/2019_41_Powerlifting.pdf", width= 10.5, device =cairo_pdf, dpi = 96) # adjust dpi accordingly
+ggsave(g, file = "plots/2019_41/2019_41_Powerlifting.png", width= 10.5, height = 9.5, type = "cairo", dpi = 96) # adjust dpi accordingly
+ggsave(g, file = "plots/2019_41/2019_41_Powerlifting.pdf", width= 10.5, height = 9.5, device =cairo_pdf, dpi = 96) # adjust dpi accordingly
 
 ```
