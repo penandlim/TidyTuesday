@@ -1,0 +1,85 @@
+---
+title: "2019_39_SchoolDiversity"
+author: "Jongseung John Lim"
+date: "10/5/2019"
+output: 
+  html_document:
+    theme: paper
+    highlight: kate
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+
+#install.packages("tidyverse")
+devtools::install_github("dkahle/ggmap")
+devtools::install_github("dr-harper/ggmapstyles")
+devtools::install_github("clauswilke/ggtext")
+```
+
+```{r prep, message=FALSE}
+library(tidyverse)
+library(ggtext)
+library(ggmap)
+library(ggmapstyles)
+library(gridExtra)
+library(reshape2)
+library(here)
+source(here::here('R/utils/secrets.R'))
+source(here::here('R/utils/utils.R'))
+source(here::here("R/utils/custom_themes.R"))
+register_google(key = googleMapsAPIKey)
+theme_set(theme_custom(base_family="dosis"))
+
+theme_update(rect = element_rect(fill = "grey10"),
+          plot.title = element_markdown(size = 35,
+                                    lineheight = 1.2,
+                                    hjust = 0.5),
+          plot.subtitle = element_markdown(size = 22, 
+                                           color = "grey50", 
+                                           hjust = 0,
+                                           lineheight = 1.4),
+          plot.caption = element_markdown(family = "dosis", 
+                                          face = "bold",
+                                          size = 18,
+                                          color = "grey50"),
+          axis.text.x = element_text(size = 14, 
+                                     family = "Roboto Mono",
+                                     color = "grey40"),
+          axis.text.y = element_text(size = 14, 
+                                     family = "Roboto Mono",
+                                     color = "grey40"),
+          axis.ticks.x = element_line(color = "grey30"),
+          axis.ticks.y = element_blank(),
+          strip.background = element_blank())
+```
+
+```{r data}
+school_diversity <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-09-24/school_diversity.csv")
+```
+
+```{r define map}
+mymap <- get_snazzymap(center = 'Flatiron Building', mapRef = "https://snazzymaps.com/style/8097/wy", zoom = 12)
+```
+
+```{r pressure, echo=FALSE}
+statePlot <- ggplot(data=subset(school_diversity, SCHOOL_YEAR=="2016-2017"), aes(x=ST, y=1)) + geom_bar(stat="identity", width=.5, aes(fill=diverse)) + 
+  labs(title="School Diversity by State", 
+       subtitle="Make Vs Avg. Mileage", 
+       caption="source: NCES")
+
+plot(statePlot)
+
+```
+
+```{r saveplot}
+ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.png", type = "cairo", bg = "#1a1a1a", dpi = 96) # adjust dpi accordingly
+ggsave(g, file = "plots/2019_40/2019_40_AllThePizza.pdf", device =cairo_pdf, bg = "#1a1a1a", dpi = 96) # adjust dpi accordingly
+ggsave(g1, file = "plots/2019_40/2019_40_AllThePizza_Charts.png", width = 10, height=10.5, type = "cairo", bg = "#1a1a1a", dpi = 96)
+ggsave(g1, file = "plots/2019_40/2019_40_AllThePizza_Charts.pdf", width = 10, height=10.5, device=cairo_pdf, bg = "#1a1a1a", dpi = 96)
+ggsave(g2, file = "plots/2019_40/2019_40_AllThePizza_Map.png", width = 10, height=9, type = "cairo", bg = "#1a1a1a", dpi = 96)
+ggsave(g2, file = "plots/2019_40/2019_40_AllThePizza_Map.pdf", width = 10, height=9,device=cairo_pdf, bg = "#1a1a1a", dpi = 96)
+
+```
