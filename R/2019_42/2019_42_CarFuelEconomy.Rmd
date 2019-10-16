@@ -124,27 +124,25 @@ co2_plot <- co2_over_year %>%
   geom_line(size = 0.5)+
   geom_segment(aes(xend = 2020, yend = co2), linetype = 2, colour = 'grey') + 
   geom_point(size = 2) + 
-  geom_text(aes(x = 2020.1, label = make), hjust = 0, size = 3, fontface = "bold") + 
-  ggtitle("Main Manufacturer CO2 Emission Average Over Time")+
+  geom_text(aes(x = 2020.1, label = make), hjust = 0, size = 3, fontface = "bold") +
   scale_x_discrete(limits=2013:2021, expand = expand_scale(mult = c(0, 0), 
                                          add = c(0.5, 1.6))) +
   guides(color=FALSE) +
-  theme_bw(base_family = "dosis") + theme(plot.title = element_markdown(size = 16, lineheight = 1.5,
-                                    face = "bold"),
+  theme_bw(base_family = "dosis") + theme(plot.title = element_markdown(size = 15, hjust = 0, face="bold"),
                                     plot.subtitle = element_text(lineheight = 1),
                                     plot.margin=unit(c(10,10,10,10), "mm")) +
   transition_reveal(along = year) +
   ease_aes('linear') +
-  labs(title = "Main Manufacturer CO2 Emission Average, 2013-2021",
-       subtitle = "Carbon dioxide (CO2) contributes to climate change and causes ocean acidification. This graph \nshows how the automobile industry has changed over time to reduce CO2 emission.",
+  labs(title = "<img src='img/car.png' height='16'></img> Tailpipe Carbon Dioxide Emission Average, 2013-2020",
+       subtitle = "Carbon dioxide (CO2) contributes to climate change and causes ocean acidification. This graph \nshows how the tailpipe CO2 emissions from different manufacturers have changed over time.",
        caption = "Source: fueleconomy.gov | Visualization by John Lim", 
        x = NULL, y = "CO2 Emission") 
 
-#plot(co2_plot)
+plot(co2_plot)
 
 ```
 
 ```{r saveplot}
-anim <- animate(co2_plot, fps = 30, duration = 10, width = 600, height = 600, end_pause = 10)
+anim <- animate(co2_plot, fps = 30, duration = 10, width = 600, height = 600, end_pause = 10, type = "cairo")
 anim_save(here::here("plots/2019_42/2019_42_CarFuelEconomy.gif"), anim)
 ```
