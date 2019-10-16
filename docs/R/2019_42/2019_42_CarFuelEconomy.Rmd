@@ -1,0 +1,151 @@
+---
+title: "2019_42_CarFuelEconomy"
+author: "Jongseung John Lim"
+date: "10/15/2019"
+output: 
+  html_document:
+    theme: paper
+    highlight: kate
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+
+#install.packages("tidyverse")
+devtools::install_github("dkahle/ggmap")
+devtools::install_github("dr-harper/ggmapstyles")
+#devtools::install_github("clauswilke/ggtext")
+```
+
+```{r prep, message=FALSE}
+library(tidyverse)
+library(ggtext)
+library(gganimate)
+library(gridExtra)
+library(reshape2)
+library(ghibli)
+library(here)
+source(here::here('R/utils/secrets.R'))
+source(here::here('R/utils/utils.R'))
+source(here::here("R/utils/custom_themes.R"))
+
+theme_set(theme_custom(base_family="dosis"))
+```
+
+```{r data}
+big_epa_cars <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-15/big_epa_cars.csv")
+```
+
+```{r cleanup}
+# Clean up code from https://thebioengineer.github.io/thebioengineer.github.io/2019/09/10/big-mtcars/
+epa_mtcars <-big_epa_cars %>% 
+  mutate(
+    fuel         = paste0(fuelType1,",",fuelType2),
+    mpg_city     = paste0(city08 ,",",cityA08),
+    mpg_hw       = paste0(highway08 ,",",highwayA08),
+    c02          = paste0(co2,",",co2A),
+    trany        = 
+      gsub("Auto\\(AM-S(\\d+)\\)","Automatic \\1-spd",
+      gsub("4-spd Doubled","4-spd",
+      gsub("(variable gear ratios)","variable_gear_ratios",
+                        trany)),perl=TRUE)
+  ) %>% 
+  separate(trany,c("transmission","gears"),sep=" ") %>% 
+  mutate(gears = gsub("-spd","",gears)) %>% 
+  select(
+    make         = make,
+    model        = model,
+    year         = year,
+    type         = VClass,
+    displacement = displ,
+    transmission,
+    gears,
+    cylinders    = cylinders,
+    drive,
+    fuel,
+    mpg_city,
+    mpg_hw,
+    c02
+  ) %>% 
+  separate_rows(fuel,mpg_city,mpg_hw,c02,sep=",") %>% 
+  filter(fuel     !="NA",
+         mpg_city !=0) %>% 
+  mutate(mpg_city  = as.numeric(mpg_city),
+         mpg_hw    = as.numeric(mpg_hw),
+         c02       = as.numeric(c02),
+         c02       = na_if(c02,-1)) %>% 
+  arrange(make,model,year)
+
+co2_over_year <- epa_mtcars %>% 
+  filter(!is.na(c02) & year > 2012) %>%
+  group_by(make,year) %>% 
+  summarize(co2 = mean(c02),
+            ncars = n())
+
+
+```
+
+```{r theme}
+theme_update(rect = element_rect(fill = "grey10"),
+          plot.title = element_markdown(size = 35,
+                                    lineheight = 1.2,
+                                    hjust = 0.5),
+          plot.subtitle = element_markdown(size = 22, 
+                                           color = "grey50", 
+                                           hjust = 0,
+                                           lineheight = 1.4),
+          plot.caption = element_markdown(family = "dosis", 
+                                          face = "bold",
+                                          size = 18,
+                                          color = "grey50"),
+          axis.text.x = element_text(size = 14, 
+                                     family = "Roboto Mono",
+                                     color = "grey40"),
+          axis.text.y = element_text(size = 14, 
+                                     family = "Roboto Mono",
+                                     color = "grey40"),
+          axis.ticks.x = element_line(color = "grey30"),
+          axis.ticks.y = element_blank(),
+          strip.background = element_blank())
+```
+
+```{r plotting, echo=FALSE}
+main_manufacturers<-c("Audi", "BMW", "Chevrolet", "Chrysler", "Dodge", 
+                      "Ford", "GMC", "Honda", "Hyundai", "Jeep", 
+                      "Mazda", "Mercedes-Benz", "Mitsubishi", "Nissan",
+                      "Porsche", "Subaru", "Toyota", "Volkswagen", "Volvo")
+
+co2_plot <- co2_over_year %>%
+  filter(make %in% main_manufacturers) %>% 
+  ungroup() %>% 
+  ggplot(aes( x = year,
+                 y = co2, group = make, color = make) ) +
+  geom_line(size = 0.5)+
+  geom_segment(aes(xend = 2020, yend = co2), linetype = 2, colour = 'grey') + 
+  geom_point(size = 2) + 
+  geom_text(aes(x = 2020.1, label = make), hjust = 0, size = 3, fontface = "bold") +
+  scale_x_discrete(limits=2013:2021, expand = expand_scale(mult = c(0, 0), 
+                                         add = c(0.5, 1.6))) +
+  guides(color=FALSE) +
+  theme_bw(base_family = "dosis") + theme(plot.title = element_markdown(size = 17.5,
+                                    lineheight = 1.2,
+                                    hjust = 0, face="bold"),
+                                    plot.subtitle = element_text(lineheight = 1),
+                                    plot.margin=unit(c(10,10,10,10), "mm")) +
+  transition_reveal(along = year) +
+  ease_aes('linear') +
+  labs(title = "<img src='img/car.png' width='60'></img>Tailpipe CO<span style='font-size: 12px'>2</span> Emission Average (2013-2020)",
+       subtitle = "Carbon dioxide (CO2) contributes to climate change and causes ocean acidification. This graph \nshows how the tailpipe CO2 emissions from different manufacturers have changed over time.",
+       caption = "Source: fueleconomy.gov | Visualization by John Lim", 
+       x = NULL, y = "CO2 Emission") 
+
+# plot(co2_plot)
+
+```
+
+```{r saveplot}
+anim <- animate(co2_plot, fps = 30, duration = 10, width = 600, height = 600, end_pause = 30, type = "cairo")
+anim_save(here::here("plots/2019_42/2019_42_CarFuelEconomy.gif"), anim)
+```

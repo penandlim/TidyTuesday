@@ -78,17 +78,13 @@ epa_mtcars <-big_epa_cars %>%
          c02       = na_if(c02,-1)) %>% 
   arrange(make,model,year)
 
-mpg_over_year <- epa_mtcars %>% 
-  mutate(mpg = mpg_hw * .45 + mpg_city * .55) %>% 
-  group_by(fuel,year) %>% 
-  summarize(fleet_mpg = mean(mpg),
-            ncars = n())
-
 co2_over_year <- epa_mtcars %>% 
   filter(!is.na(c02) & year > 2012) %>%
   group_by(make,year) %>% 
   summarize(co2 = mean(c02),
             ncars = n())
+
+
 ```
 
 ```{r theme}
@@ -116,6 +112,11 @@ theme_update(rect = element_rect(fill = "grey10"),
 ```
 
 ```{r plotting, echo=FALSE}
+main_manufacturers<-c("Audi", "BMW", "Chevrolet", "Chrysler", "Dodge", 
+                      "Ford", "GMC", "Honda", "Hyundai", "Jeep", 
+                      "Mazda", "Mercedes-Benz", "Mitsubishi", "Nissan",
+                      "Porsche", "Subaru", "Toyota", "Volkswagen", "Volvo")
+
 co2_plot <- co2_over_year %>%
   filter(make %in% main_manufacturers) %>% 
   ungroup() %>% 
@@ -128,21 +129,23 @@ co2_plot <- co2_over_year %>%
   scale_x_discrete(limits=2013:2021, expand = expand_scale(mult = c(0, 0), 
                                          add = c(0.5, 1.6))) +
   guides(color=FALSE) +
-  theme_bw(base_family = "dosis") + theme(plot.title = element_markdown(size = 15, hjust = 0, face="bold"),
+  theme_bw(base_family = "dosis") + theme(plot.title = element_markdown(size = 17.5,
+                                    lineheight = 1.2,
+                                    hjust = 0, face="bold"),
                                     plot.subtitle = element_text(lineheight = 1),
                                     plot.margin=unit(c(10,10,10,10), "mm")) +
   transition_reveal(along = year) +
   ease_aes('linear') +
-  labs(title = "<img src='img/car.png' height='16'></img> Tailpipe Carbon Dioxide Emission Average, 2013-2020",
+  labs(title = "<img src='img/car.png' width='60'></img>Tailpipe CO<span style='font-size: 12px'>2</span> Emission Average (2013-2020)",
        subtitle = "Carbon dioxide (CO2) contributes to climate change and causes ocean acidification. This graph \nshows how the tailpipe CO2 emissions from different manufacturers have changed over time.",
        caption = "Source: fueleconomy.gov | Visualization by John Lim", 
        x = NULL, y = "CO2 Emission") 
 
-plot(co2_plot)
+# plot(co2_plot)
 
 ```
 
 ```{r saveplot}
-anim <- animate(co2_plot, fps = 30, duration = 10, width = 600, height = 600, end_pause = 10, type = "cairo")
+anim <- animate(co2_plot, fps = 30, duration = 10, width = 600, height = 600, end_pause = 30, type = "cairo")
 anim_save(here::here("plots/2019_42/2019_42_CarFuelEconomy.gif"), anim)
 ```
