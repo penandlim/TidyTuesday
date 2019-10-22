@@ -1,5 +1,10 @@
 # TidyTuesday
 
+## [[2019-10-22] Horror Movie Ratings on IMDB (2012-2018) Interactive](https://penandlim.github.io/TidyTuesday/R/2019_43/2019_43_HorrorMovies.html)
+[![Horror Movie Ratings on IMDB, 2012-2018](./plots/2019_43/2019_43_HorrorMovies.png)](https://penandlim.github.io/TidyTuesday/R/2019_43/2019_43_HorrorMovies.html)
+
+***
+
 ## [[2019-10-15] 🚗💨 Tailpipe CO2 Emission Average, 2013-2020](./R/2019_42/)
 [![Tailpipe CO2 Emission Average, 2013-2020](./plots/2019_42/2019_42_CarFuelEconomy.gif)](https://github.com/penandlim/TidyTuesday/tree/master/plots/2019_42/)
 
