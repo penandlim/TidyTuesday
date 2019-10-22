@@ -1,6 +1,6 @@
 # TidyTuesday
 
-## [[2019-10-22] Horror Movie Ratings on IMDB (2012-2018) Interactive](https://penandlim.github.io/TidyTuesday/R/2019_43/2019_43_HorrorMovies.html)
+## [[2019-10-22] Horror Movie Ratings on IMDB (2012-2018) - Interactive Chart Interactive](https://penandlim.github.io/TidyTuesday/R/2019_43/2019_43_HorrorMovies.html)
 [![Horror Movie Ratings on IMDB, 2012-2018](./plots/2019_43/2019_43_HorrorMovies.png)](https://penandlim.github.io/TidyTuesday/R/2019_43/2019_43_HorrorMovies.html)
 
 ***
