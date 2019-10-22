@@ -87,7 +87,7 @@ p <- plot_ly(df, x = ~release_date, y = ~review_rating,
   )
 ) %>%
 layout(
-  title = "Horror Movies on IMDB (2012 - 2018)",
+  title = '🎃 <b>Horror Movies on IMDB (2012 - 2018)</b>',
   xaxis = list(
       type = 'date',
       tickformat = "%b '%y",
@@ -95,10 +95,13 @@ layout(
   ),
   yaxis = list(
     title="IMDB rating"
-  )
+  ),
+  autosize=T,
+  margin=list(l=60, r=60, t=60, b=60)
 )
 
 p
+api_create(p, filename = "r-horror-movies")
 
 #orca(p, here::here("plots/2019_43/2019_43_HorrorMovies.png"))
 plotly_IMAGE(p, format = "png", out_file = here::here("plots/2019_43/2019_43_HorrorMovies.png"))
