@@ -72,7 +72,7 @@ df <- horror_movies %>%
 df$release_date <- as.factor(df$release_date)
 ```
 
-```{r plotting, echo=FALSE}
+```{r plotting, echo=FALSE, warning = FALSE, message=FALSE}
 p <- plot_ly(df, x = ~release_date, y = ~review_rating,
   # Hover text:
   text = ~paste("Title: ", title, '<br>Genre:', genres),
@@ -100,11 +100,10 @@ layout(
   margin=list(l=60, r=60, t=60, b=60)
 )
 
-p
+
 api_create(p, filename = "r-horror-movies")
 
-#orca(p, here::here("plots/2019_43/2019_43_HorrorMovies.png"))
-plotly_IMAGE(p, format = "png", out_file = here::here("plots/2019_43/2019_43_HorrorMovies.png"))
+#plotly_IMAGE(p, format = "png", out_file = here::here("plots/2019_43/2019_43_HorrorMovies.png"))
 ```
 
 
