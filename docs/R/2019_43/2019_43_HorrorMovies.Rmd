@@ -3,9 +3,10 @@ title: "2019_43_HorrorMovies"
 author: "Jongseung John Lim"
 date: "10/22/2019"
 output: 
-  html_document:
-    theme: paper
+  html_document: 
+    css: ~/TidyTuesday/css/width.css
     highlight: kate
+    theme: paper
 editor_options: 
   chunk_output_type: console
 ---
