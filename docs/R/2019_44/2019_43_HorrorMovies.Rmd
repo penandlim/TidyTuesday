@@ -1,0 +1,111 @@
+---
+title: "2019_43_HorrorMovies"
+author: "Jongseung John Lim"
+date: "10/22/2019"
+output: 
+  html_document: 
+    css: ~/TidyTuesday/css/width.css
+    highlight: kate
+    theme: paper
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+
+#install.packages("tidyverse")
+devtools::install_github("dkahle/ggmap")
+devtools::install_github("dr-harper/ggmapstyles")
+#devtools::install_github("clauswilke/ggtext")
+```
+
+```{r prep, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggtext)
+library(gganimate)
+library(gridExtra)
+library(reshape2)
+library(ghibli)
+library(here)
+library(plotly)
+source(here::here('R/utils/secrets.R'))
+source(here::here('R/utils/utils.R'))
+source(here::here("R/utils/custom_themes.R"))
+
+theme_set(theme_custom(base_family="dosis"))
+```
+
+```{r data, echo=FALSE, message=FALSE}
+horror_movies <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-10-22/horror_movies.csv")
+
+Months <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+fix_date <- function(date) {
+  
+  if (nchar(date) < 5) {
+    new_date <- paste(date, "-01-01", sep="")
+  } else {
+    
+    year <- paste("20", substr(date, nchar(date) - 1, nchar(date)), sep="")
+    m <- match(substr(date, nchar(date) - 5, nchar(date) - 3), Months)
+    if (nchar(m) == 1) {
+      m <- paste("0", m, sep="")
+    }
+    d <- substr(date, 0, gregexpr("-", date)[[1]][[1]] - 1 )
+    if (nchar(d) == 1) {
+      d <- paste("0", d, sep="")
+    }
+    new_date <- paste(year, m, d, sep="-")
+  }
+  
+  return(new_date)
+}
+
+df <- horror_movies %>%
+  filter(!is.na(release_date) & !is.na(review_rating)) %>%
+  rowwise %>%
+  do({
+        result = as_tibble(.)
+        result$release_date = fix_date(result$release_date)
+        result
+    })
+df$release_date <- as.factor(df$release_date)
+```
+
+```{r plotting, echo=FALSE, warning = FALSE, message=FALSE}
+p <- plot_ly(df, x = ~release_date, y = ~review_rating,
+  # Hover text:
+  text = ~paste("Title: ", title, '<br>Genre:', genres),
+  type = 'scatter' , mode = 'markers',
+  marker=list(
+    color=~review_rating,
+    colorbar=list(
+      title='Rating'
+    ),
+    colorscale='Viridis',
+    reversescale =T
+  )
+) %>%
+layout(
+  title = '🎃 <b>Horror Movies on IMDB (2012 - 2018)</b>',
+  xaxis = list(
+      type = 'date',
+      tickformat = "%b '%y",
+      title="Release Date"
+  ),
+  yaxis = list(
+    title="IMDB rating"
+  ),
+  autosize=T,
+  margin=list(l=60, r=60, t=60, b=60)
+)
+
+
+api_create(p, filename = "r-horror-movies")
+
+#plotly_IMAGE(p, format = "png", out_file = here::here("plots/2019_43/2019_43_HorrorMovies.png"))
+```
+
+
+
