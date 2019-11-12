@@ -1,0 +1,79 @@
+---
+title: "2019_45_Bike_&_Walk_Commutes"
+author: "Jongseung John Lim"
+date: "10/22/2019"
+output: 
+  html_document: 
+    css: ~/TidyTuesday/css/width.css
+    highlight: kate
+    theme: paper
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+
+#install.packages("tidyverse")
+devtools::install_github("dkahle/ggmap")
+devtools::install_github("dr-harper/ggmapstyles")
+#devtools::install_github("clauswilke/ggtext")
+```
+
+```{r prep, message=FALSE, echo=FALSE}
+library(tidyverse)
+library(ggtext)
+library(gganimate)
+library(gridExtra)
+library(reshape2)
+library(ghibli)
+library(here)
+library(plotly)
+source(here::here('R/utils/secrets.R'))
+source(here::here('R/utils/utils.R'))
+source(here::here("R/utils/custom_themes.R"))
+
+theme_set(theme_custom(base_family="dosis"))
+```
+
+```{r data, echo=FALSE, message=FALSE}
+commute_mode <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-11-05/commute.csv")
+
+```
+
+```{r plotting, echo=FALSE, warning = FALSE, message=FALSE}
+p <- plot_ly(df, x = ~release_date, y = ~review_rating,
+  # Hover text:
+  text = ~paste("Title: ", title, '<br>Genre:', genres),
+  type = 'scatter' , mode = 'markers',
+  marker=list(
+    color=~review_rating,
+    colorbar=list(
+      title='Rating'
+    ),
+    colorscale='Viridis',
+    reversescale =T
+  )
+) %>%
+layout(
+  title = '🎃 <b>Horror Movies on IMDB (2012 - 2018)</b>',
+  xaxis = list(
+      type = 'date',
+      tickformat = "%b '%y",
+      title="Release Date"
+  ),
+  yaxis = list(
+    title="IMDB rating"
+  ),
+  autosize=T,
+  margin=list(l=60, r=60, t=60, b=60)
+)
+
+
+api_create(p, filename = "r-horror-movies")
+
+#plotly_IMAGE(p, format = "png", out_file = here::here("plots/2019_43/2019_43_HorrorMovies.png"))
+```
+
+
+
