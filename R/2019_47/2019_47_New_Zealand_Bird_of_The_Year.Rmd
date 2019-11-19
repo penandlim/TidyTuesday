@@ -1,7 +1,7 @@
 ---
-title: "2019_45_Bike_&_Walk_Commutes"
+title: "2019_47_New_Zealand_Bird_of_The_Year"
 author: "Jongseung John Lim"
-date: "11/05/2019"
+date: "11/19/2019"
 output: 
   html_document: 
     css: ~/TidyTuesday/css/width.css
@@ -17,6 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
 #install.packages("tidyverse")
 devtools::install_github("dkahle/ggmap")
 devtools::install_github("dr-harper/ggmapstyles")
+devtools::install_github("thebioengineer/tidytuesdayR")
 #devtools::install_github("clauswilke/ggtext")
 ```
 
@@ -37,8 +38,8 @@ theme_set(theme_custom(base_family="dosis"))
 ```
 
 ```{r data, echo=FALSE, message=FALSE}
-commute_mode <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-11-05/commute.csv")
-
+tuesdata <- tidytuesdayR::tt_load(2019, week = 47)
+nz_bird <- tuesdata$nz_bird
 ```
 
 ```{r plotting, echo=FALSE, warning = FALSE, message=FALSE}
